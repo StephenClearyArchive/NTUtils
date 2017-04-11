@@ -15,12 +15,13 @@
 <li>Logging into a remote machine using Windows network authentication</li>
 <li>Remote control of services (including installation and uninstallation)</li>
 <li>Using one executable as both a console program and a service program</li>
+<li>Properly securing a named pipe, including proper impersonation</li>
 <li>Listing, pausing, and resuming processes (including processes running under other user accounts)</li>
 </ul></p>
 
 <h2>Requirements and Instructions for Building from Source</h2>
 
-<p>The source targets the Cygwin compiler (building with <span class="code">-mno-cygwin</span> to prevent run-time dependencies). It also uses <a href="http://upx.sourceforge.net/" target="_top">UPX</a> for reducing executable size.</p>
+<p>The source is written for the Cygwin compiler (building with <span class="code">-mno-cygwin</span> to prevent run-time dependencies). It also uses <a href="http://upx.sourceforge.net/" target="_top">UPX</a> for reducing executable size.</p>
 
 <p>Parts of the code are dependent on the <a href="http://www.boost.org/" target="_top">Boost Library Collection</a>. The provided <span class="code">Makefile</span> assumes that the environment variable <span class="code">BOOST</span> is set to the location of the Boost libraries.</p>
 
@@ -30,9 +31,17 @@
 
 <p>NTUtils programs try their best not to depend on the NT API, since it is subject to change without notice. In general, it is only used to supply missing functionality on old, stable platforms (e.g., to implement <span class="code">OpenThread</span> on Windows NT 4.0).</p>
 
-<h3>Native NT API Discoveries</h3>
+<h2>Documentation Bugs Discovered</h2>
 
-<p>The classic reference &quot;Windows NT/2000 Native API Reference&quot; by Gary Nebbett is missing a field in the <span class="code">SYSTEM_PROCESSES</span> class (officially called the <span class="code">SYSTEM_PROCESS_INFORMATION</span> class by the Platform SDK). This causes any program accessing the threads array of a process to fail.</p>
+<h3>Native NT API</h3>
+
+<p>The classic reference &quot;Windows NT/2000 Native API Reference&quot; by Gary Nebbett is used as the Native NT API documentation.</p>
+
+<p>A field is missing in the <span class="code">SYSTEM_PROCESSES</span> structure (officially called the <span class="code">SYSTEM_PROCESS_INFORMATION</span> class by the Platform SDK). This causes any program accessing the threads array of a process to fail.</p>
+
+<h3>Win32 API</h3>
+
+<p>The <span class="code">GetPriorityClass</span> function is documented as requiring the <span class="code">PROCESS_QUERY_INFORMATION</span> access right. However, it will still fail for some processes under NT, even if that right is granted on the process handle. The workaround used by NTUtils programs is to always attempt to open the process handle with <span class="code">PROCESS_ALL_ACCESS</span> rights, and default to <span class="code">PROCESS_QUERY_INFORMATION</span> if the full access handle fails. This is a bug in NT, and is not present in later products.</p>
 
 <h2>Directory Structure</h2>
 

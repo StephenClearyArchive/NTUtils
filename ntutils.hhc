@@ -38,6 +38,10 @@
 		</OBJECT>
 	<UL>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ntpriority">
+			<param name="Local" value="docs/ntpriority.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="ntsuspend">
 			<param name="Local" value="docs\ntsuspend.html">
 			</OBJECT>

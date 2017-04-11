@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>NTUtils - ntpriority</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+<h1 align="center">ntpriority - Set the priority of a process</h1>
+
+<h2>Usage</h2>
+
+<pre class="code">
+Usage: ntpriority [options]
+Options:
+  -h [ --help ]           : Display this information
+  -i [ --pid ] arg        : Specify process id
+  -n [ --name ] arg       : Specify process name
+  -s [ --substr ]         :   Process name is a substring match
+  -l [ --level ] arg      : Set priority level of process(es)
+                            'arg' may be a numerical value or IDLE, BELOW_NORMAL, NORMAL, ABOVE_NORMAL, HIGH, or REALTIME
+  -t [ --test ]           : Test priority level of process(es)
+  -c [ --computer ] arg   : Execute on remote computer
+  -u [ --username ] arg   :   Username for remote computer
+  -p [ --password ] [arg] :   Password for remote computer</pre>
+
+<p>The <span class="code">--help</span> option displays usage information (see <a href="standards.html">Usage Standards</a>). The <span class="code">--pid</span>, <span class="code">--name</span>, and <span class="code">--substr</span> options are used to select processes on which to operate; see <a href="standards.html">Usage Standards</a> for the semantics. The <span class="code">--computer</span>, <span class="code">--username</span>, and <span class="code">--password</span> options are used in <a href="remote.html">remote administration</a>.</p>
+
+<p><span class="code">ntpriority</span> supports two actions: set the priority level of processes (<span class="code">--level</span>), or test (display) the priority level of processes (<span class="code">--test</span>).</p>
+
+<p>Setting the priority level of a process will change how the system schedules that process. Higher priority processes get more CPU time.</p>
+
+<p>Testing a process will display the current priority level of that process. You can get a list of all process names, ids, and their priority level by running <span class="code">ntpriority -t</span>.</p>
+
+<p>Note: the values <span class="code">BELOW_NORMAL</span> and <span class="code">ABOVE_NORMAL</span> are not supported on Windows NT.</p>
+
+<p>Note: when a process creates child processes, the <span class="code">IDLE</span> priority is inherited by those child processes. If the parent process is running with any other priority, the child processes start with <span class="code">NORMAL</span> priority.</p>
+
+<p>Due to a bug in the Win32 API on NT, this program must be run with administrator rights. This bug is not present in Windows 2000 and later systems.</p>
+
+<h2>Limitations</h2>
+
+<p>When operating remotely, process names are limited to 256 characters.</p>
+
+<p>When operating remotely, the maximum size of the output is 8196 characters.</p>
+
+</body>
+</html>

@@ -19,6 +19,21 @@
 
 <p>Every NTUtils program also supports common options for <a href="remote.html">remote administration</a>.</p>
 
+<h3>Process Selection</h3>
+
+<p>For NTUtils programs that operate on processes, common options and semantics are shared:</p>
+
+<pre class="code">
+  -i [ --pid ] arg        : Specify process id
+  -n [ --name ] arg       : Specify process name
+  -s [ --substr ]         :   Process name is a substring match</pre>
+
+<p>The processes to act on may be specified by process id (<span class="code">--pid</span>), by name (<span class="code">--name</span>) or by name substring (<span class="code">--substr --name</span>). Either the process id or name may be specified, but not both. Any actions that do anything other than collect and display information require a process id or name, but read-only actions will run against all processes in the system if neither is specified. When processes are specified by name or name substring, the action is taken against all processes matching that name or name substring. The extension of the process (e.g., <span class="code">.exe</span>) may be provided but is not necessary when specifying processes by name.</p>
+
+<p>When performing an action against a list of processes, if one of the actions fails, the rest of the list is ignored and the already-affected processes are not rolled back. For example, if there are three instances of <span class="code">notepad</span> running, the second of which is under a different user account, and a non-Administrator runs an NTUtils program with the name option (<span class="code">-n notepad</span>), the action against the first process would succeed but the second one would cause an error; in this case, the first process has had the action done, the second process has not, and the third process is not attempted.</p>
+
+<p>Process id 0 cannot be specified for any type of action. On NT-based systems, this is the idle process.</p>
+
 <h3>Option Parsing</h3>
 
 <p>Every option has a short (single character) and long form. An option may have a required or an optional argument (or no argument).</p>

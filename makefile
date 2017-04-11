@@ -7,15 +7,15 @@ CFLAGS = -s -Os -mno-cygwin
 FLAGS = $(CFLAGS) -fno-enforce-eh-specs
 LFLAGS =
 
-VERSION = 1.1
+VERSION = 1.2
 
-PROGRAMS = ntsuspend.exe
+PROGRAMS = ntsuspend.exe ntpriority.exe
 
 all: $(PROGRAMS) ntutils.chm
 
-*.exe: %.exe: %.cpp include/ntutils/%.inc include/basic/*.h include/ntutils/*.h
+$(PROGRAMS): %.exe: %.cpp include/ntutils/%.inc include/basic/*.h include/ntutils/*.h
 	g++ $(INCLUDES) $(FLAGS) $(LFLAGS) -o $@ $< -lmpr
-	upx --best ntsuspend.exe
+	upx --best $@
 
 ntutils.chm: ntutils.hhp ntutils.hhc docs/*.html docs/*.css
 	-hhc ntutils.hhp

@@ -2,11 +2,9 @@
 // See the accompanying file "ntutils.chm" for licence information
 
 #include <set>
-#include <map>
 
-#include "ntutils/toolhelp.h"
+#include "ntutils/processes.h"
 #include "ntutils/thread.h"
-#include "ntutils/shlwapi_dll.h"
 #include "ntutils/token.h"
 
 using namespace ntutils;
@@ -68,56 +66,6 @@ static DWORD process_suspend_count(const DWORD process_id)
 
 // Returns true if a process is already suspended; throws an exception if the process id is unknown
 static inline bool process_is_suspended(const DWORD process_id) { return (process_suspend_count(process_id) != 0); }
-
-// Returns all processes matching the prefix 'name'
-inline static std::map<DWORD, string> find_process(const string & name, const bool exact_match)
-{
-  std::map<DWORD, string> ret;
-  tool_help_snapshot<owned> snapshot;
-  snapshot.create(TH32CS_SNAPPROCESS);
-  for (tool_help_process_iterator i = snapshot.processes_begin(); i != snapshot.processes_end(); ++i)
-  {
-    if (exact_match)
-    {
-      // This test only allows exact matches
-      if (!_tcsicmp(i->szExeFile, name.c_str()))
-        ret[i->th32ProcessID] = i->szExeFile;
-      else
-      {
-        // Also allow exact matches on the process base name
-        PROCESSENTRY32 proc = *i;
-        PortablePathRemoveExtension(proc.szExeFile);
-        if (!_tcsicmp(proc.szExeFile, name.c_str()))
-          ret[i->th32ProcessID] = i->szExeFile;
-      }
-    }
-    else
-    {
-      // This test allows, e.g., "proc.exe" to only match processes called "proc.exe"
-      //  while also allowing "proc" to match processes called "proc.exe" or "proc.com"
-      if (!_tcsnicmp(i->szExeFile, name.c_str(), name.length()))
-        ret[i->th32ProcessID] = i->szExeFile;
-    }
-  }
-  return ret;
-}
-
-// Returns all processes matching the process id
-inline static std::map<DWORD, string> find_process(const DWORD pid)
-{
-  std::map<DWORD, string> ret;
-  tool_help_snapshot<owned> snapshot;
-  snapshot.create(TH32CS_SNAPPROCESS);
-  for (tool_help_process_iterator i = snapshot.processes_begin(); i != snapshot.processes_end(); ++i)
-  {
-    if (i->th32ProcessID == pid)
-    {
-      ret[i->th32ProcessID] = i->szExeFile;
-      break;
-    }
-  }
-  return ret;
-}
 
 inline static void resume_process(const DWORD process_id)
 {
@@ -231,35 +179,16 @@ inline static void suspend_process(const int process_id)
 }
 
 // The main work function
-static string ntsuspend(const bool running_local, const string & name, const bool exact_match, const DWORD pid, const bool resume, const bool test)
+static string ntsuspend(const bool running_local, const process_selector & selector, const bool resume, const bool test)
 {
-  std::map<DWORD, string> processes;
-  if (test && name.empty() && pid == 0)
-  {
-    tool_help_snapshot<owned> snapshot;
-    snapshot.create(TH32CS_SNAPPROCESS);
-    for (tool_help_process_iterator i = snapshot.processes_begin(); i != snapshot.processes_end(); ++i)
-      processes[i->th32ProcessID] = i->szExeFile;
-  }
-  else if (!name.empty())
-    processes = find_process(name, exact_match);
-  else
-    processes = find_process(pid);
+  std::map<DWORD, string> processes = selector.select_processes();
 
   // Make sure none of the process ids are for our process; this could happen if the
   //  process to be suspended/resumed exited/was terminated just before this process
   //  was started.
   // We treat this just as though we could not find the process id.
-  // We also filter out the idle process (id 0).
   processes.erase(GetCurrentProcessId());
-  processes.erase(0);
-  if (processes.empty())
-  {
-    if (name.empty())
-      throw error(TEXT("Could not find process ") + to_string(pid));
-    else
-      throw error(TEXT("Could not find process ") + name);
-  }
+  selector.validate_process_list(processes.empty());
 
   enable_debug_privilege(running_local);
 

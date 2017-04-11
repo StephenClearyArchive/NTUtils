@@ -24,13 +24,10 @@ struct server: server_framework<server>
     //    n, followed by length-prefixed string of name
     //    s, followed by length-prefixed string of name (substring match)
 
-    DWORD pid = 0;
-    string name;
-    bool exact_match = true;
     bool resume = false;
     bool test = false;
 
-    int i = 0;
+    unsigned i = 0;
 
     switch (msg[0])
     {
@@ -44,34 +41,8 @@ struct server: server_framework<server>
     if (msg_size == 1 && !test)
       throw error(TEXT("Invalid message received: no target"));
 
-    if (msg_size > 1)
-    {
-      switch (msg[1])
-      {
-        case TEXT('i'):
-        {
-          if (msg_size < 2 + sizeof(pid))
-            throw error(TEXT("Invalid message received: incomplete pid target"));
-          CopyMemory(&pid, msg.get() + 2, sizeof(pid));
-          i += 1 + sizeof(pid);
-          break;
-        }
-        case TEXT('n'):
-        case TEXT('s'):
-        {
-          if (msg[1] == TEXT('s'))
-            exact_match = false;
-          if (msg_size < 3)
-            throw error(TEXT("Invalid message received: incomplete name target length"));
-          const unsigned length = msg[2];
-          if (msg_size < 3 + length)
-            throw error(TEXT("Invalid message received: incomplete name target"));
-          name = string(msg.get() + 3, msg.get() + 3 + length);
-          i += 2 + length;
-          break;
-        }
-      }
-    }
+    process_selector selector;
+    selector.get_target_from_message(i, msg, msg_size);
 
     if (i != msg_size)
       throw error(TEXT("Invalid message received: extra data"));
@@ -79,7 +50,7 @@ struct server: server_framework<server>
     string response;
     try
     {
-      response = ntsuspend(false, name, exact_match, pid, resume, test);
+      response = ntsuspend(false, selector, resume, test);
     }
     catch (const error & e)
     {
@@ -133,11 +104,9 @@ int command_line_main(int argc, char_t * argv[])
   {
     option_parser options(argc, argv + 1, option_defs.begin(), option_defs.end());
 
-    DWORD pid = 0;
-    string name;
-    bool exact_match = true;
     bool resume = false;
     bool test = false;
+    process_selector selector;
     client_def client;
     while (options.getopt())
     {
@@ -148,40 +117,26 @@ int command_line_main(int argc, char_t * argv[])
       {
         case TEXT('h'):
           return usage();
-        case TEXT('i'):
-          pid = _tcstoul(options.argument, 0, 0);
-          if (pid == 0)
-            throw option_error(string(TEXT("Invalid argument '")) + options.argument + TEXT("' for option --pid"));
-          break;
-        case TEXT('n'):
-          name = options.argument;
-          break;
-        case TEXT('s'):
-          exact_match = false;
-          break;
         case TEXT('r'):
           resume = true;
           break;
         case TEXT('t'):
           test = true;
           break;
-        case TEXT('c'):
-        case TEXT('u'):
-        case TEXT('p'):
-          client.handle_option(options);
-          break;
+        default:
+          if (selector.handle_option(options))
+            break;
+          if (client.handle_option(options))
+            break;
       }
     }
 
-    if (pid == 0 && name.empty() && !test)
-      throw option_error(TEXT("Neither process id nor process name specified"));
-    else if (pid != 0 && !name.empty())
-      throw option_error(TEXT("Both process id and process name specified"));
+    selector.validate_options(test);
 
     // Handle local requests
     if (!client.is_remote())
     {
-      tcout(ntsuspend(true, name, exact_match, pid, resume, test));
+      tcout(ntsuspend(true, selector, resume, test));
       return 0;
     }
 
@@ -193,22 +148,8 @@ int command_line_main(int argc, char_t * argv[])
       msg += TEXT('r');
     else
       msg += TEXT('s');
-    if (pid != 0)
-    {
-      msg.resize(2 + sizeof(pid));
-      msg[1] = TEXT('i');
-      CopyMemory(&msg[0] + 2, &pid, sizeof(pid));
-    }
-    else if (!name.empty())
-    {
-      msg.resize(3 + name.length());
-      if (exact_match)
-        msg[1] = TEXT('n');
-      else
-        msg[1] = TEXT('s');
-      msg[2] = name.length();
-      CopyMemory(&msg[0] + 3, &name[0], name.length());
-    }
+
+    selector.add_target_to_message(msg);
 
     // Handle remote requests
     client.start(msg, max_response_size);

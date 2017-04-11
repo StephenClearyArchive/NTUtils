@@ -196,23 +196,25 @@ struct client_framework
   client_framework()
   :password_specified(false), prompt_for_password(false) { }
 
-  void handle_option(const option_parser & options)
+  bool handle_option(const option_parser & options)
   {
     switch (options.option->short_option)
     {
       case TEXT('c'):
         computer = options.argument;
-        break;
+        return true;
       case TEXT('u'):
         username = options.argument;
-        break;
+        return true;
       case TEXT('p'):
         password_specified = true;
         if (options.argument)
           password = options.argument;
         else
           prompt_for_password = true;
-        break;
+        return true;
+      default:
+        return false;
     }
   }
 
