@@ -39,11 +39,40 @@
 
 <p>Remote administration becomes complicated with Windows XP because of simple file sharing. Simple file sharing means that every user logging into that machine (via Windows Networking) over the network only receives Guest authentication instead of their actual user authentication. Since Guest users cannot run arbitrary programs remotely, NTUtils programs will fail. This &quot;feature&quot; is enabled by default in Windows XP Professional and cannot be disabled at all in Windows XP Home.</p>
 
+<h2>Networks and Network Logons</h2>
+
+<p>In Windows networks, a user is only supposed to log onto a remote machine once. The logon creates a network session, and then network connections are established using that session. (In reality, it is possible to have two network sessions to the remote computer if you use the computer name for one session and the computer IP address for the other). Creating a network connection with a different username than an existing session will result in an error.</p>
+
+<p>A user may initiate a network session with a remote computer by establishing a network connection to the <span class="code">IPC$</span> share. This can be done with the command line <span class="code">net use \\COMPUTER_NAME</span> (remember to escape the backslashes if you're using the Cygwin shell). The <span class="code">net use</span> program will prompt for a username and password if necessary. NTUtils programs will recognize pre-existing network connections; the following bullet points define the behavior of NTUtils programs in every network connection scenario:</p>
+
+<ul>
+<li>If there are no network connections to the target computer, the NTUtils program will create one using the <span class="code">IPC$</span> share. This network connection is deleted when the NTUtils program exits. If specified, the NTUtils program will use the <span class="code">--username</span> and <span class="code">--password</span> options to authenticate the network connection (prompting for the password if it is not supplied as an argument). If the username and password are not specified, the NTUtils program will authenticate the network connection using the currently logged-on user's username and password.</li>
+<li>If there is an existing network connection to the target computer's <span class="code">IPC$</span> share:
+ <ul>
+ <li>If the <span class="code">--username</span> option is specified (and the username option is different than the username for the existing network connection), the NTUtils program will output a warning, e.g., <span class="code">Warning: Already logged on to COMPUTER_NAME as EXISTING_CONNECTION_USERNAME; ignoring request to log on as USERNAME_OPTION_VALUE</span>, and will proceed using the existing network connection. The network connection is not deleted when the NTUtils program exits. In this case, any <span class="code">--username</span> and <span class="code">--password</span> options are ignored.</li>
+ <li>Otherwise, the NTUtils program will silently use the existing network connection. The network connection is not deleted when the NTUtils program exits.</li>
+ </ul>
+</li>
+<li>If there is an existing network connection to the target computer, but not to the <span class="code">IPC$</span> share (for example, a mapped network drive):
+ <ul>
+ <li>If the <span class="code">--username</span> option is not specified (or it is the same as the username for the existing network connection), the NTUtils program uses the authentication for the existing network connection. In this case, the NTUtils program will create a network connection to the <span class="code">IPC$</span> share. This network connection (but not the already existing network connection) is deleted when the NTUtils program exits. The <span class="code">--password</span> option does not have to be specified in this case, since the user already has a connection to the remote computer.</li>
+ <li>Otherwise, there is a mismatch between the username for an existing network connection and the username specified as an option. The NTUtils program will proceed and attempt to create a network connection to the <span class="code">IPC$</span> share, but this will fail with an error message, e.g., <span class="code">Multiple connections to a server or shared resource by the same user, using more than one user name, are not allowed</span>.</li>
+ </ul>
+</li>
+</ul>
+
+<p>This predictable behavior of NTUtils programs allows for two common remote administration strategies:</p>
+
+<ul>
+<li>Independent usage - where there are no persistent network logons. Each NTUtils program will create its own network connection when it is invoked, using username and password information independently.</li>
+<li>Common logons - allowing an administrator to log on to multiple machines (using the <span class="code">net use</span> command). Each NTUtils program will use the existing logons and only requires a <span class="code">--computer</span> option to specify the remote computer.</li>
+</ul>
+
 <h2>How It Works</h2>
 
 <p>When an NTUtils program is instructed to run against a target computer, it will perform the following steps in order to execute remotely:
 <ol>
-<li>Log in to the target computer. Specifically, use Windows Networking to add a non-redirected network connection to <span class="code">\\computer\IPC$</span>. <span class="code">IPC$</span> is a standard Windows share used for network logins.</li>
+<li>Log in to the target computer, if necessary. Specifically, use Windows Networking to add a non-redirected network connection to <span class="code">\\computer\IPC$</span>. <span class="code">IPC$</span> is a standard Windows share used for network logins.</li>
 <li>Copy the NTUtils program to the target computer. Specifically, do a normal <span class="code">CopyFile</span> to <span class="code">\\computer\ADMIN$</span>, renaming the file slightly. <span class="code">ADMIN$</span> is another standard Windows share that points to the base Windows directory, e.g., <span class="code">c:\windows</span> or <span class="code">d:\winnt</span>. The file name is not exactly the same to avoid conflicts in case a user has placed the NTUtils program in their Windows directory (which is not a recommended practice, BTW).</li>
 <li>Install the NTUtils program on the target computer as a service, and start it. This is done using the remote administration capabilities of the Service Manager API.</li>
 <li>The NTUtils program, when running as a service, will create a named pipe and wait for a connection.</li>
@@ -63,7 +92,7 @@
 
 <p>All passwords are sent only to the Windows Networking (WNet) API; they are not sent in cleartext over the network connection.</p>
 
-<p>The NTUtils program's commands and responses are sent in cleartext.</p>
+<p>The NTUtils program's commands and responses are sent in cleartext. This may be changed in a future version.</p>
 
 <p>Impersonation is used by the named pipe server, to ensure that no other program connecting to that named pipe may use it for a malicious purpose.</p>
 

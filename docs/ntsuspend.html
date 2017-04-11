@@ -13,6 +13,7 @@
 Usage: ntsuspend [options]
 Options:
   -h [ --help ]           : Display this information
+  -x [ --xml ]            : Output XML
   -i [ --pid ] arg        : Specify process id
   -n [ --name ] arg       : Specify process name
   -s [ --substr ]         :   Process name is a substring match
@@ -22,7 +23,7 @@ Options:
   -u [ --username ] arg   :   Username for remote computer
   -p [ --password ] [arg] :   Password for remote computer</pre>
 
-<p>The <span class="code">--help</span> option displays usage information (see <a href="standards.html">Usage Standards</a>). The <span class="code">--pid</span>, <span class="code">--name</span>, and <span class="code">--substr</span> options are used to select processes on which to operate; see <a href="standards.html">Usage Standards</a> for the semantics. The <span class="code">--computer</span>, <span class="code">--username</span>, and <span class="code">--password</span> options are used in <a href="remote.html">remote administration</a>.</p>
+<p>The <span class="code">--help</span> option displays usage information (see <a href="standards.html">Usage Standards</a>). The <span class="code">--xml</span> option specifies that the output should be in XML (see <a href="standards.html">Usage Standards</a>). The <span class="code">--pid</span>, <span class="code">--name</span>, and <span class="code">--substr</span> options are used to select processes on which to operate; see <a href="standards.html">Usage Standards</a> for the semantics. The <span class="code">--computer</span>, <span class="code">--username</span>, and <span class="code">--password</span> options are used in <a href="remote.html">remote administration</a>.</p>
 
 <p><span class="code">ntsuspend</span> supports three different actions: suspend processes (default), resume processes (<span class="code">--resume</span>), or test processes (<span class="code">--test</span>).</p>
 
@@ -42,17 +43,23 @@ Options:
 
 <p>Testing a process is done by suspending and resuming all its threads, and checking the previous suspend counts of those threads. This is the only portable way to test for suspension.</p>
 
+<h2>XML Output</h2>
+
+<p>This program conforms to the <a href="standards.html">NTUtils Common Version 1.0</a>.</p>
+
+<p>The possible values for the <span class="code">action</span> attribute of an info node are: <span class="code">suspend</span>, <span class="code">resume</span>, and <span class="code">test</span>.</p>
+
+<p>The possible values for the <span class="code">value</span> attribute of a result node are: <span class="code">suspended</span> (if a process was suspended or if it was tested and found to be suspended), <span class="code">running</span> (if a process was tested and found to be running), or <span class="code">resumed</span> (if a process was resumed).</p>
+
 <h2>When It Fails</h2>
 
-<p><span class="code">ntsuspend</span> may fail if the processes it is acting on has one of its threads exit at just the wrong time.</p>
+<p><span class="code">ntsuspend</span> may fail if the process it is acting on has one of its threads exit at just the wrong time.</p>
 
-<p>There is also the possibility of catastrophic failure; that is, where some threads in a process are properly suspended but the rest are not. The only likely cause of this is if the process exited while it was being suspended. In the case of this happening, a special error is reported: <span class="code">Error: Process %PID% is now in an invalid state due to </span>...</p>
+<p>There is also the possibility of catastrophic failure; that is, where some threads in a process are properly suspended but the rest are not. The only likely cause of this is if the process exited while it was being suspended. In the case of this happening, a special error is reported: <span class="code">Process is now in an invalid state due to </span>...</p>
 
 <p>In the case of a process that regularly suspends and resumes its threads, and already has one thread at its maximum suspend count, <span class="code">ntsuspend</span> will be unable to suspend that process, or even test it for suspension. A similar problem may occur if such a process has a thread at one below the maximum suspend count, in which case <span class="code">ntsuspend</span> will be able to suspend the process but will not be able to resume it.</p>
 
 <h2>Limitations</h2>
-
-<p>When operating remotely, process names are limited to 256 characters.</p>
 
 <p>When operating remotely, the maximum size of the output is 8196 characters.</p>
 

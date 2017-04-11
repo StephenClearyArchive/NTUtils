@@ -7,6 +7,28 @@
 
 <h1 align="center">Revision History</h1>
 
+<h2>Version 1.3.0 (released 2005-07-07)</h2>
+
+<h3>Contents</h3>
+
+<ul>
+<li>ntpriority</li>
+<li>ntsuspend</li>
+</ul>
+
+<h3>Changes</h3>
+
+<ul>
+<li>NOTE: The stdout/stderr/return code standards have changed with this release!</li>
+<li>All programs when executing remotely will recognize existing network connections to <span class="code">IPC$</span> and preserve them instead of deleting them when complete.</li>
+<li>Put in a small delay followed by a retry when <span class="code">DeleteFile</span> fails (this is due to timing issues with the OS closing the file handle); this should fix most of the warnings from this function that occasionally appear. Note that these warnings may still happen in some circumstances.</li>
+<li>Added support for stable XML output.</li>
+<li>Changed versioning scheme to include a &quot;release&quot; number as well as major and minor version numbers.</li>
+<li>Refactored source tree.</li>
+<li>Removed 255-character restrictions on process names when operating remotely.</li>
+<li>Changed the list operation semantics: NTUTils programs will now always continue with the next target, instead of exiting.</li>
+</ul>
+
 <h2>Version 1.2 (released 2005-06-27)</h2>
 
 <h3>Contents</h3>

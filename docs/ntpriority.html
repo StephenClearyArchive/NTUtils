@@ -13,6 +13,7 @@
 Usage: ntpriority [options]
 Options:
   -h [ --help ]           : Display this information
+  -x [ --xml ]            : Output XML
   -i [ --pid ] arg        : Specify process id
   -n [ --name ] arg       : Specify process name
   -s [ --substr ]         :   Process name is a substring match
@@ -23,7 +24,7 @@ Options:
   -u [ --username ] arg   :   Username for remote computer
   -p [ --password ] [arg] :   Password for remote computer</pre>
 
-<p>The <span class="code">--help</span> option displays usage information (see <a href="standards.html">Usage Standards</a>). The <span class="code">--pid</span>, <span class="code">--name</span>, and <span class="code">--substr</span> options are used to select processes on which to operate; see <a href="standards.html">Usage Standards</a> for the semantics. The <span class="code">--computer</span>, <span class="code">--username</span>, and <span class="code">--password</span> options are used in <a href="remote.html">remote administration</a>.</p>
+<p>The <span class="code">--help</span> option displays usage information (see <a href="standards.html">Usage Standards</a>). The <span class="code">--xml</span> option specifies that the output should be in XML (see <a href="standards.html">Usage Standards</a>). The <span class="code">--pid</span>, <span class="code">--name</span>, and <span class="code">--substr</span> options are used to select processes on which to operate; see <a href="standards.html">Usage Standards</a> for the semantics. The <span class="code">--computer</span>, <span class="code">--username</span>, and <span class="code">--password</span> options are used in <a href="remote.html">remote administration</a>.</p>
 
 <p><span class="code">ntpriority</span> supports two actions: set the priority level of processes (<span class="code">--level</span>), or test (display) the priority level of processes (<span class="code">--test</span>).</p>
 
@@ -37,9 +38,17 @@ Options:
 
 <p>Due to a bug in the Win32 API on NT, this program must be run with administrator rights. This bug is not present in Windows 2000 and later systems.</p>
 
-<h2>Limitations</h2>
+<p>On NT systems, some core system processes will fail with <span class="code">Access is denied</span> errors. This may be because NT core processes do not have a priority class.</p>
 
-<p>When operating remotely, process names are limited to 256 characters.</p>
+<h2>XML Output</h2>
+
+<p>This program conforms to the <a href="standards.html">NTUtils Common Version 1.0</a>.</p>
+
+<p>The possible values for the <span class="code">action</span> attribute of an info node are: <span class="code">set level</span> and <span class="code">test</span>.</p>
+
+<p>The possible values for the <span class="code">value</span> attribute of a result node are: <span class="code">ABOVE_NORMAL</span>, <span class="code">BELOW_NORMAL</span>, <span class="code">HIGH</span>, <span class="code">IDLE</span>, <span class="code">NORMAL</span>, <span class="code">REALTIME</span>, or a numerical identifier if the value is not well-known. When setting the level of a process, the result node reports the new level.</p>
+
+<h2>Limitations</h2>
 
 <p>When operating remotely, the maximum size of the output is 8196 characters.</p>
 

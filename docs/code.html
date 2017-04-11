@@ -45,18 +45,18 @@
 
 <h2>Directory Structure</h2>
 
-<p>The <span class="code">include</span> directory contains most of the code; that directory contains several header file libraries.</p>
+<p>The <span class="code">src/include</span> directory contains most of the code; that directory contains several header file libraries.</p>
 
 <ul>
-<li><span class="code">include/basic</span> - A subset of the not-yet-released TBA library collection. Provides general-purpose class templates, and the common error framework.</li>
-<li><span class="code">include/ntutils</span> - Contains some general-purpose classes (that may eventually be moved into <span class="code">include/basic</span>), some less general classes shared between NTUtils programs, and the actual implementation of the NTUtils programs' logic.</li>
+<li><span class="code">src/include/basic</span> - A subset of the not-yet-released TBA library collection. Provides general-purpose class templates, and the common error framework.</li>
+<li><span class="code">src/include/ntutils</span> - Contains some general-purpose classes (that may eventually be moved into <span class="code">src/include/basic</span>) and some less general framework classes shared between NTUtils programs.</li>
 </ul>
 
-<p>The base <span class="code">cpp</span> file (e.g., <span class="code">ntsuspend.cpp</span>) usually just contains the code for parsing options. The general framework for running as a service and named pipe communications is in <span class="code">include/ntutils/remote_framework.h</span>. The actual implementation of the program logic is found in an <span class="code">inc</span> file in the <span class="code">include/ntutils</span> directory (e.g., <span class="code">include/ntutils/ntsuspend.inc</span>).</p>
+<p>The base <span class="code">cpp</span> file (e.g., <span class="code">src/ntsuspend.cpp</span>) usually just contains the code for parsing options. The general framework for running as a service and single-shot named pipe communications is in <span class="code">src/include/ntutils/remote_framework.h</span>. The actual implementation of the program logic is found in an <span class="code">inc</span> file in the <span class="code">src</span> directory (e.g., <span class="code">src/ntsuspend.inc</span>).</p>
 
 <h2>Errors</h2>
 
-<p>All error messages are designed to be as verbose as reasonably possible; this results in larger executables but much less time spent debugging or discovering what the problem really is. Error messages while running as a command-line program are sent to stderr; error messages while running as a service are sent to <span class="code">OutputDebugString</span>.</p>
+<p>All error messages are designed to be as verbose as reasonably possible; this results in larger executables but much less time spent debugging or discovering what the problem really is. Normal error messages are collected and sent to stdout when running as a command-line program, or sent across the network when running as a service. Fatal error messages are sent to stderr when running as a command-line program, or are sent to <span class="code">OutputDebugString</span> when running as a service.</p>
 
 </body>
 </html>

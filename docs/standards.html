@@ -1,11 +1,11 @@
 <html>
 <head>
-<title>NTUtils - Options, Output, and Return Code Standards</title>
+<title>NTUtils - Standards</title>
 <link rel="stylesheet" href="style.css" type="text/css" />
 </head>
 <body>
 
-<h1 align="center">Options, Output, and Return Code Standards</h1>
+<h1 align="center">Standards</h1>
 
 <h2>Introduction</h2>
 
@@ -13,11 +13,11 @@
 
 <h2>Usage Standards</h2>
 
-<p>Every option passed to an NTUtils program has a short and a long form. Short options are single characters, and long options are words. E.g., <span class="code">-h</span> and <span class="code">--help</span> are the two different ways of specifying the help option.</p>
+<p>Every NTUtils program supports the <span class="code">--help</span> option. For the help option, the NTUtils program will display a standard usage text describing all available options on stderr, and will not do anything else.</p>
 
-<p>Every NTUtils program supports the <span class="code">-h</span> and <span class="code">--help</span> options. For the help option, the NTUtils program will display a standard usage text describing all available options on stderr, and will not do anything else.</p>
+<p>Every NTUtils program supports the <span class="code">--xml</span> option, which produces XML output (see below).</p>
 
-<p>Every NTUtils program also supports common options for <a href="remote.html">remote administration</a>.</p>
+<p>Most NTUtils programs also support common options for <a href="remote.html">remote administration</a>.</p>
 
 <h3>Process Selection</h3>
 
@@ -29,8 +29,6 @@
   -s [ --substr ]         :   Process name is a substring match</pre>
 
 <p>The processes to act on may be specified by process id (<span class="code">--pid</span>), by name (<span class="code">--name</span>) or by name substring (<span class="code">--substr --name</span>). Either the process id or name may be specified, but not both. Any actions that do anything other than collect and display information require a process id or name, but read-only actions will run against all processes in the system if neither is specified. When processes are specified by name or name substring, the action is taken against all processes matching that name or name substring. The extension of the process (e.g., <span class="code">.exe</span>) may be provided but is not necessary when specifying processes by name.</p>
-
-<p>When performing an action against a list of processes, if one of the actions fails, the rest of the list is ignored and the already-affected processes are not rolled back. For example, if there are three instances of <span class="code">notepad</span> running, the second of which is under a different user account, and a non-Administrator runs an NTUtils program with the name option (<span class="code">-n notepad</span>), the action against the first process would succeed but the second one would cause an error; in this case, the first process has had the action done, the second process has not, and the third process is not attempted.</p>
 
 <p>Process id 0 cannot be specified for any type of action. On NT-based systems, this is the idle process.</p>
 
@@ -44,15 +42,73 @@
 
 <p>Long options are specified by two preceding hyphens, e.g., <span class="code">--substring</span>. Arguments for long options may be separated from the option by whitespace, or by a single equals sign, e.g., <span class="code">--password bob</span> and <span class="code">--password=bob</span> are equivalent. However, if an option argument starts with a hyphen, it must be specified using the equals sign: <span class="code">--password -bob</span> is parsed as two options, but <span class="code">--password=-bob</span> is parsed as a single option with argument.</p>
 
+<h2>Operational Standards</h2>
+
+<p>When performing an action against a list of processes (or computers), if one of the actions fails, the program continues with rest of the list. The context of the error is output with the error, so the user should be able to determine to which process (or computer) the error applies.</p>
+
 <h2>Output Standards</h2>
 
-<p>Warnings and errors are output on stderr. Warnings are prefixed with the string <span class="code">Warning: </span> and errors are prefixed with the string <span class="code">Error: </span>. Each warning and error will be exactly one line long; output is not formatted to the terminal width.</p>
-
-<p>Interactive prompts and program results are output on stdout.</p>
+<p>All results of any operations, be they warnings, errors, or success messages, are output on stdout. Stderr is normally used for interactive reasons (e.g., prompting for a password or displaying the help text). Output may also be sent to stderr if there is an unrecoverable error; this only includes option parsing errors and program bugs.</p>
 
 <h2>Return Code Standards</h2>
 
-<p>All NTUtils programs return 0 if there was no error, -1 if there was an error, and 1 if the help option was specified.</p>
+<p>All NTUtils programs return 0 if there was no error, -1 if there was at least one error detected (details in stdout), and 1 if the help option was specified or if there was some unrecoverable error (details in stderr).</p>
+
+<h2>XML Output Standards</h2>
+
+<p>The root node of the XML output is the name of the NTUtils program, and this node has at least one attribute <span class="code">version</span>. This is the version of the XML output, not the version of the NTUtils program.</p>
+
+<h3>XML Output Versions</h3>
+
+<p>XML version numbers are a major number and a minor number separated by a period. The minor version number is incremented when there are new nodes or attributes defined. The major version number is incremented when there is a non-backwards-compatible change. As long as the program reading the XML ignores unknown nodes and attributes, it will remain compatible until the major version number is incremented.</p>
+
+<p>XML version numbering is completely independent for each NTUtils program.</p>
+
+<h3>XML Common Version 1.0</h3>
+
+<p>The root node will have at least one child. Children of the root node may be info nodes, warning nodes, error nodes, context nodes, or result nodes.</p>
+
+<h4>Info Nodes</h4>
+
+<p>Info nodes do not have any children. They cannot be a child of any node other than the root node. The purpose of info nodes is to describe what the NTUtils program is attempting to do. The root node may have several children that are info nodes.</p>
+
+<h5>Info Nodes (Action)</h5>
+
+<p>An info node may have a single attribute <span class="code">action</span>, which specifies what action the NTUtils program is attempting to do.</p>
+
+<h5>Info Nodes (Process Selection)</h5>
+
+<p>An info node may have a single attribute <span class="code">target_process_id</span>, or it may have two attributes <span class="code">target_process_name</span> and <span class="code">exact_match</span>, specifying the processes targeted. Alternatively, it may have a single attribute <span class="code">target_process</span> with the value <span class="code">all</span>, indicating that the action will be performed for all processes.</p>
+
+<h4>Warning Nodes</h4>
+
+<p>A warning node either has a single attribute <span class="code">message</span>, or it has a single child error node.</p>
+
+<h4>Error Nodes</h4>
+
+<p>All error nodes have an attribute <span class="code">type</span>, which indicates the source of the error. Common values include <span class="code">Win32</span>, <span class="code">WNet</span>, and <span class="code">General</span>. All error nodes also have an attribute <span class="code">message</span>, which has a human-readable error message. Error nodes may only have other error nodes as children.</p>
+
+<p>Some error nodes have an attribute <span class="code">function</span>, which specifies the function call that caused the error. Win32 and WNet error nodes always have this attribute.</p>
+
+<p>Win32 error nodes also have an attribute <span class="code">code</span>, specifying the actual error code value.</p>
+
+<p>WNet error nodes, depending on the error value, will either have an attribute <span class="code">code</span>, with the same meaning as the Win32 error node attribute; or these nodes may have an attribute <span class="code">provider</span>, specifying which network provider caused the error.</p>
+
+<h4>Context Nodes</h4>
+
+<p>Context nodes act as containers for error, warning, and result nodes. Context nodes may also contain other context nodes.</p>
+
+<h5>Context Nodes (Computer)</h5>
+
+<p>Computer context nodes have an attribute <span class="code">computer</span>, specifying the computer name or IP address of the target.</p>
+
+<h5>Context Nodes (Process)</h5>
+
+<p>Process context nodes have attributes <span class="code">process_name</span> and <span class="code">process_id</span>, identifying the process.</p>
+
+<h4>Result Nodes</h4>
+
+<p>Result nodes specify the result of an action. Most result nodes have a single attribute <span class="code">value</span>, containing the result of the action. Note that errors are never output as a result node; they are output as an error node.</p>
 
 </body>
 </html>

@@ -1,0 +1,21 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=ntutils.chm
+Contents file=ntutils.hhc
+Default Window=main
+Default topic=readme.html
+Display compile progress=No
+Full-text search=Yes
+Language=0x409 English (United States)
+Title=NTUtils
+
+[WINDOWS]
+main=,"ntutils.hhc",,"readme.html","readme.html",,,,,0x63520,,0x384e,,0x100b0000,,,,,,0
+
+
+[FILES]
+*.html
+*.css
+
+[INFOTYPES]
+
