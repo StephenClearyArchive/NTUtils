@@ -1,0 +1,41 @@
+<html>
+<head>
+<title>NTUtils - Revision History</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+<h1 align="center">Revision History</h1>
+
+<h2>Version 1.1 (released 2005-06-19)</h2>
+
+<h3>Contents</h3>
+
+<ul>
+<li>ntsuspend</li>
+</ul>
+
+<h3>Changes</h3>
+
+<ul>
+<li>Corrected bug in reading passwords from console input. Specifying <span class="code">-p</span> without an argument will now work correctly.</li>
+<li>Put documentation in a CHM.</li>
+<li>Corrected all security issues:
+ <ul>
+ <li>A more restrictive DACL was defined for the server-side named pipe, allowing anyone to connect but preventing anyone from taking ownership or changing the DACL.</li>
+ <li>Changed the reading of the named pipe to be done before impersonation begins (i.e., using the creator/owner's security context).</li>
+ <li>Ensured that enabling the debug privilege is done with the proper impersonated context instead of the process security context.</li>
+ <li>Ensured that the impersonation level of the impersonation is at least at a level where impersonating is being done, instead of anonymous or identify impersonation level.</li>
+ </ul></li>
+</ul>
+
+<h2>Version 1.0 (released 2005-06-17)</h2>
+
+<h3>Contents</h3>
+
+<ul>
+<li>ntsuspend</li>
+</ul>
+
+</body>
+</html>

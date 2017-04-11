@@ -5,7 +5,7 @@
 </head>
 <body>
 
-<h1 align="center">NTUtils - Source Code Overview</h1>
+<h1 align="center">Source Code Overview</h1>
 
 <h2>Techniques Demonstrated</h2>
 
@@ -20,9 +20,11 @@
 
 <h2>Requirements and Instructions for Building from Source</h2>
 
-<p>The source targets the Cygwin compiler (building with <span class="code">-mno-cygwin</span> to run-time dependencies). It also uses <a href="http://upx.sourceforge.net/">UPX</a> for reducing executable size.</p>
+<p>The source targets the Cygwin compiler (building with <span class="code">-mno-cygwin</span> to prevent run-time dependencies). It also uses <a href="http://upx.sourceforge.net/" target="_top">UPX</a> for reducing executable size.</p>
 
-<p>Parts of the code are dependent on the <a href="http://www.boost.org/">Boost Library Collection</a>. The provided <span class="code">Makefile</span> assumes that the environment variable <span class="code">BOOST</span> is set to the location of the Boost libraries.</p>
+<p>Parts of the code are dependent on the <a href="http://www.boost.org/" target="_top">Boost Library Collection</a>. The provided <span class="code">Makefile</span> assumes that the environment variable <span class="code">BOOST</span> is set to the location of the Boost libraries.</p>
+
+<p>The documentation is built using the Microsoft HTML Help Workshop; you have to add it to your path before running <span class="code">make ntutils.chm</span>. This isn't an open-source tool, but it is freely available for download.</p>
 
 <h2>Usage of the Native NT API</h2>
 
@@ -41,7 +43,11 @@
 <li><span class="code">include/ntutils</span> - Contains some general-purpose classes (that may eventually be moved into <span class="code">include/basic</span>), some less general classes shared between NTUtils programs, and the actual implementation of the NTUtils programs' logic.</li>
 </ul>
 
-<p>The base <span class="code">cpp</span> file (e.g., <span class="code">ntsuspend.cpp</span>) only contains the code for parsing options, running as a service, and the named pipe communications. The actual implementation of the program logic is found in an <span class="code">inc</span> file in the <span class="code">include/ntutils</span> directory (e.g., <span class="code">include/ntutils/ntsuspend.inc</span>).</p>
+<p>The base <span class="code">cpp</span> file (e.g., <span class="code">ntsuspend.cpp</span>) usually just contains the code for parsing options. The general framework for running as a service and named pipe communications is in <span class="code">include/ntutils/remote_framework.h</span>. The actual implementation of the program logic is found in an <span class="code">inc</span> file in the <span class="code">include/ntutils</span> directory (e.g., <span class="code">include/ntutils/ntsuspend.inc</span>).</p>
+
+<h2>Errors</h2>
+
+<p>All error messages are designed to be as verbose as reasonably possible; this results in larger executables but much less time spent debugging or discovering what the problem really is. Error messages while running as a command-line program are sent to stderr; error messages while running as a service are sent to <span class="code">OutputDebugString</span>.</p>
 
 </body>
 </html>

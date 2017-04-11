@@ -1,5 +1,5 @@
 // Copyright 2005, Stephen Cleary
-// See the accompanying file "readme.html" for licence information
+// See the accompanying file "ntutils.chm" for licence information
 
 #ifndef BASIC_NAMED_PIPE_H
 #define BASIC_NAMED_PIPE_H
@@ -14,13 +14,13 @@ struct named_pipe: io_handle_base<named_pipe<Owned> >
   typedef io_handle_base<named_pipe<Owned> > base_type;
   TBA_DEFINE_HANDLE_CLASS(named_pipe, HANDLE)
 
-  void CreateNamedPipe(const LPCTSTR name, const DWORD open_mode, const DWORD pipe_mode, const DWORD max_instances,
+  void CreateNamedPipe(const_str_ptr name, const DWORD open_mode, const DWORD pipe_mode, const DWORD max_instances,
       const DWORD outbuf_size = 0, const DWORD inbuf_size = 0, const DWORD timeout = INFINITE, const LPSECURITY_ATTRIBUTES sec = 0)
   {
     BOOST_STATIC_ASSERT(Owned::value);
     this->Reset(::CreateNamedPipe(name, open_mode, pipe_mode, max_instances, outbuf_size, inbuf_size, timeout, sec));
   }
-  void create_named_pipe(const LPCTSTR name, const DWORD open_mode, const DWORD pipe_mode, const DWORD max_instances,
+  void create_named_pipe(const_str_ptr name, const DWORD open_mode, const DWORD pipe_mode, const DWORD max_instances,
       const DWORD outbuf_size = 0, const DWORD inbuf_size = 0, const DWORD timeout = INFINITE, const LPSECURITY_ATTRIBUTES sec = 0)
   {
     BOOST_STATIC_ASSERT(Owned::value);

@@ -1,5 +1,5 @@
 // Copyright 2005, Stephen Cleary
-// See the accompanying file "readme.html" for licence information
+// See the accompanying file "ntutils.chm" for licence information
 
 #ifndef NTUTILS_CONSOLE_H
 #define NTUTILS_CONSOLE_H
@@ -32,7 +32,8 @@ inline string read_from_console(const DWORD max = 256)
   ret.resize(max);
   if (!ReadFile(in, &ret[0], max * sizeof(char_t), &read, 0))
     throw Win32_error(TEXT("ReadFile (console)"));
-  ret.resize(read / sizeof(char_t));
+  // We subtract 2 for the CR/LF
+  ret.resize(read / sizeof(char_t) - 2);
   return ret;
 }
 

@@ -1,5 +1,5 @@
 # Copyright 2005, Stephen Cleary
-# See the accompanying file "readme.html" for licence information
+# See the accompanying file "ntutils.chm" for licence information
 
 # Expects BOOST environment variable to be set to the location of the Boost libraries
 INCLUDES = -I$(BOOST) -Iinclude
@@ -7,22 +7,27 @@ CFLAGS = -s -Os -mno-cygwin
 FLAGS = $(CFLAGS) -fno-enforce-eh-specs
 LFLAGS =
 
-VERSION = 1.0
+VERSION = 1.1
 
-all: ntsuspend.exe
+PROGRAMS = ntsuspend.exe
 
-ntsuspend.exe: ntsuspend.cpp
-	g++ $(INCLUDES) $(FLAGS) $(LFLAGS) -o ntsuspend.exe ntsuspend.cpp -lmpr
+all: $(PROGRAMS) ntutils.chm
+
+*.exe: %.exe: %.cpp include/ntutils/%.inc include/basic/*.h include/ntutils/*.h
+	g++ $(INCLUDES) $(FLAGS) $(LFLAGS) -o $@ $< -lmpr
 	upx --best ntsuspend.exe
 
-dist: ntutils-$(VERSION).tar.gz ntutils-$(VERSION)-src.tar.gz
+ntutils.chm: ntutils.hhp ntutils.hhc docs/*.html docs/*.css
+	-hhc ntutils.hhp
 
-ntutils-$(VERSION).tar.gz: all
-	rm -rf ntutils-$(VERSION).tar.gz ntutils-$(VERSION).tar
-	tar cf ntutils-$(VERSION).tar ntsuspend.exe readme.html docs/*
-	gzip ntutils-$(VERSION).tar
+dist: ntutils-$(VERSION)-bin.tar.gz ntutils-$(VERSION)-src.tar.gz
 
-ntutils-$(VERSION)-src.tar.gz: all
+ntutils-$(VERSION)-bin.tar.gz: $(PROGRAMS) ntutils.chm
+	rm -rf ntutils-$(VERSION)-bin.tar.gz ntutils-$(VERSION)-bin.tar
+	tar cf ntutils-$(VERSION)-bin.tar *.exe ntutils.chm
+	gzip ntutils-$(VERSION)-bin.tar
+
+ntutils-$(VERSION)-src.tar.gz: $(PROGRAMS) ntutils.chm
 	rm -rf ntutils-$(VERSION)-src.tar.gz ntutils-$(VERSION)-src.tar
-	tar cf ntutils-$(VERSION)-src.tar ntsuspend.cpp readme.html makefile docs/* include/*
+	tar cf ntutils-$(VERSION)-src.tar docs/* include/* *.cpp makefile ntutils.chm ntutils.hhp ntutils.hhc
 	gzip ntutils-$(VERSION)-src.tar

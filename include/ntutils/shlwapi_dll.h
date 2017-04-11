@@ -1,5 +1,5 @@
 // Copyright 2005, Stephen Cleary
-// See the accompanying file "readme.html" for licence information
+// See the accompanying file "ntutils.chm" for licence information
 
 #ifndef NTUTILS_SHLWAPI_H
 #define NTUTILS_SHLWAPI_H

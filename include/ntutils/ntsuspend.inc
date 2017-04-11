@@ -1,5 +1,5 @@
 // Copyright 2005, Stephen Cleary
-// See the accompanying file "readme.html" for licence information
+// See the accompanying file "ntutils.chm" for licence information
 
 #include <set>
 #include <map>
@@ -231,7 +231,7 @@ inline static void suspend_process(const int process_id)
 }
 
 // The main work function
-static string ntsuspend(const string & name, const bool exact_match, const DWORD pid, const bool resume, const bool test)
+static string ntsuspend(const bool running_local, const string & name, const bool exact_match, const DWORD pid, const bool resume, const bool test)
 {
   std::map<DWORD, string> processes;
   if (test && name.empty() && pid == 0)
@@ -261,12 +261,7 @@ static string ntsuspend(const string & name, const bool exact_match, const DWORD
       throw error(TEXT("Could not find process ") + name);
   }
 
-  // Enable the debug privilege, if we have it available to us
-  // This allows us to test/suspend/resume processes running under other user accounts
-  // If the debug privilege is not available, this code will do nothing
-  token<owned> process_token;
-  process_token.OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES);
-  process_token.Enable_Privilege(SE_DEBUG_NAME);
+  enable_debug_privilege(running_local);
 
   string ret;
   for (std::map<DWORD, string>::const_iterator i = processes.begin(); i != processes.end(); ++i)
