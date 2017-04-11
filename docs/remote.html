@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>NTUtils - Remote Administration</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+<h1 align="center">NTUtils - Remote Administration</h1>
+
+<h2>Introduction</h2>
+
+<p>NTUtils programs may be run on the local machine, or they may be run against a remote machine. The remote machine does not require NTUtils to already exist on that machine.</p>
+
+<p>When using NTUtils programs for remote administration, the machine on which the command is invoked is called the <i>source</i> computer, and the machine on which the command is executed is called the <i>target</i> computer. The source computer will copy the NTUtils program to the target computer and remotely invoke it.</p>
+
+<h2>Common Options</h2>
+
+<p>For consistency, all NTUtils programs accept the same options for remote administration:</p>
+<pre class="code">-c [ --computer ] arg
+-u [ --username ] arg
+-p [ --password ] [arg]</pre>
+<ul>
+<li><span class="code">computer</span> - Specifies the target computer, by name or IP address</li>
+<li><span class="code">username</span> - Specifies the user name used to log into the target computer; this may be a simple username or a <span class="code">DOMAIN\USER</span> string</li>
+<li><span class="code">password</span> - Specifies the password to use to log into the target computer; if the optional argument is not provided, the NTUtils program will prompt for a password</li>
+</ul>
+
+<p>If no user name or password is specified, the NTUtils program will attempt to log in using the default credentials. If a user name but no password is specified, the NTUtils program will attempt to log in using the default password associated with that user name.</p>
+
+<p>The username and password should be for an account in the Administrators group. To be precisely correct, this is not actually required, but they do have to be for an account that allows network logins and installation and control of services - which by default is only the members of the Administrators group.</p>
+
+<p>Security Note: Be aware that specifying a password on the command line makes it available to be easily seen by other programs.</p>
+
+<h2>Requirements</h2>
+
+<p>The source computer may be running any NT-based OS.</p>
+
+<p>The target computer has more complicated OS requirements: it may be running Windows NT 4, Windows 2000, or Windows 2003 Server. The target computer may <b>not</b> be running Windows XP Home. The target computer may be running Windows XP Professional <b>if</b> that computer is either a member of a domain or has turned <i>off</i> &quot;simple file sharing&quot;.</p>
+
+<p>Remote administration becomes complicated with Windows XP because of simple file sharing. Simple file sharing means that every user logging into that machine (via Windows Networking) over the network only receives Guest authentication instead of their actual user authentication. Since Guest users cannot run arbitrary programs remotely, NTUtils programs will fail. This &quot;feature&quot; is enabled by default in Windows XP Professional and cannot be disabled at all in Windows XP Home.</p>
+
+<h2>How It Works</h2>
+
+<p>When an NTUtils program is instructed to run against a target computer, it will perform the following steps in order to execute remotely:
+<ol>
+<li>Log in to the target computer. Specifically, use Windows Networking to add a non-redirected network connection to <span class="code">\\computer\IPC$</span>. <span class="code">IPC$</span> is a standard Windows share used for network logins.</li>
+<li>Copy the NTUtils program to the target computer. Specifically, do a normal <span class="code">CopyFile</span> to <span class="code">\\computer\ADMIN$</span>, renaming the file slightly. <span class="code">ADMIN$</span> is another standard Windows share that points to the base Windows directory, e.g., <span class="code">c:\windows</span> or <span class="code">d:\winnt</span>. The file name is not exactly the same to avoid conflicts in case a user has placed the NTUtils program in their Windows directory (which is not a recommended practice, BTW).</li>
+<li>Install the NTUtils program on the target computer as a service, and start it. This is done using the remote administration capabilities of the Service Manager API.</li>
+<li>The NTUtils program, when running as a service, will create a named pipe and wait for a connection.</li>
+<li>The NTUtils program on the source machine will connect to that named pipe and send the commands.</li>
+<li>The target NTUtils program performs the requested action, and reports any results back to the source NTUtils program.</li>
+<li>The source NTUtils program prints the results of the remote action.</li>
+<li>Cleanup, of course. Uninstallation of the service and deletion of the file on the target machine, and cancelling the network connection to <span class="code">\\computer\IPC$</span>.</li>
+</ol>
+
+<h2>When It Messes Up</h2>
+
+<p>It is possible that some part of the NTUtils program will not properly operate when running remotely. However, all of the remote administration support code is designed to automatically recover from such failures or crashes. When an NTUtils program detects an improper pre-existing state, it will output a warning and continue; for example, when installing the service on the target machine, if the service is already installed, the NTUtils program will output a warning and then continue as though it had installed it (attempting to uninstall it when complete).</p>
+
+<p>Possible causes for this type of failure include manual intervention, network errors, and multiple operators running the same NTUtils program remotely against the same target computer at one time. In this latter case, probably only one of the operators will see any warning or error messages, and there would be no lingering effects after both programs complete. It is possible in this situation that one of the programs will fail.</p>
+
+<h2>Security</h2>
+
+<p>All passwords are sent only to the Windows Networking (WNet) API; they are not sent in cleartext over the network connection.</p>
+
+<p>The NTUtils program's commands and responses are sent in cleartext.</p>
+
+<p>Impersonation is used by the named pipe server, to ensure that no other program connecting to that named pipe may use it for a malicious purpose.</p>
+
+<p>A NULL DACL is used on the named pipe server; this does allow hijaking of the server-side named pipe by a malicious client. This will be fixed in a later revision.</p>
+
+</body>
+</html>

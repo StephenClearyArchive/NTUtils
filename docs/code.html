@@ -1,0 +1,47 @@
+<html>
+<head>
+<title>NTUtils - Source Code Overview</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+<h1 align="center">NTUtils - Source Code Overview</h1>
+
+<h2>Techniques Demonstrated</h2>
+
+<p>The source code for NTUtils demonstrates the following interesting techniques:
+<ul>
+<li>Run-time dynamic linking when necessary to maximize portability</li>
+<li>Logging into a remote machine using Windows network authentication</li>
+<li>Remote control of services (including installation and uninstallation)</li>
+<li>Using one executable as both a console program and a service program</li>
+<li>Listing, pausing, and resuming processes (including processes running under other user accounts)</li>
+</ul></p>
+
+<h2>Requirements and Instructions for Building from Source</h2>
+
+<p>The source targets the Cygwin compiler (building with <span class="code">-mno-cygwin</span> to run-time dependencies). It also uses <a href="http://upx.sourceforge.net/">UPX</a> for reducing executable size.</p>
+
+<p>Parts of the code are dependent on the <a href="http://www.boost.org/">Boost Library Collection</a>. The provided <span class="code">Makefile</span> assumes that the environment variable <span class="code">BOOST</span> is set to the location of the Boost libraries.</p>
+
+<h2>Usage of the Native NT API</h2>
+
+<p>NTUtils programs try their best not to depend on the NT API, since it is subject to change without notice. In general, it is only used to supply missing functionality on old, stable platforms (e.g., to implement <span class="code">OpenThread</span> on Windows NT 4.0).</p>
+
+<h3>Native NT API Discoveries</h3>
+
+<p>The classic reference &quot;Windows NT/2000 Native API Reference&quot; by Gary Nebbett is missing a field in the <span class="code">SYSTEM_PROCESSES</span> class (officially called the <span class="code">SYSTEM_PROCESS_INFORMATION</span> class by the Platform SDK). This causes any program accessing the threads array of a process to fail.</p>
+
+<h2>Directory Structure</h2>
+
+<p>The <span class="code">include</span> directory contains most of the code; that directory contains several header file libraries.</p>
+
+<ul>
+<li><span class="code">include/basic</span> - A subset of the not-yet-released TBA library collection. Provides general-purpose class templates, and the common error framework.</li>
+<li><span class="code">include/ntutils</span> - Contains some general-purpose classes (that may eventually be moved into <span class="code">include/basic</span>), some less general classes shared between NTUtils programs, and the actual implementation of the NTUtils programs' logic.</li>
+</ul>
+
+<p>The base <span class="code">cpp</span> file (e.g., <span class="code">ntsuspend.cpp</span>) only contains the code for parsing options, running as a service, and the named pipe communications. The actual implementation of the program logic is found in an <span class="code">inc</span> file in the <span class="code">include/ntutils</span> directory (e.g., <span class="code">include/ntutils/ntsuspend.inc</span>).</p>
+
+</body>
+</html>

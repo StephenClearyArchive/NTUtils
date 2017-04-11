@@ -1,0 +1,12 @@
+span.code {
+ white-space: pre;
+ font-family: monospace;
+ font-size: smaller;
+ background-color: #eeeeee;
+}
+
+pre.code {
+ margin-left: 2em;
+ margin-right: 2em;
+ background-color: #eeeeee;
+}

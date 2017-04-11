@@ -1,0 +1,43 @@
+<html>
+<head>
+<title>NTUtils - Options, Output, and Return Code Standards</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+<h1 align="center">NTUtils - Options, Output, and Return Code Standards</h1>
+
+<h2>Introduction</h2>
+
+<p>To facilitate scripting, NTUtils programs follow certain standards regarding their use of options, stdout, stderr, and return codes.</p>
+
+<h2>Usage Standards</h2>
+
+<p>Every option passed to an NTUtils program has a short and a long form. Short options are single characters, and long options are words. E.g., <span class="code">-h</span> and <span class="code">--help</span> are the two different ways of specifying the help option.</p>
+
+<p>Every NTUtils program supports the <span class="code">-h</span> and <span class="code">--help</span> options. For the help option, the NTUtils program will display a standard usage text describing all available options on stderr, and will not do anything else.</p>
+
+<p>Every NTUtils program also supports common options for <a href="remote.html">remote administration</a>.</p>
+
+<h3>Option Parsing</h3>
+
+<p>Every option has a short (single character) and long form. An option may have a required or an optional argument (or no argument).</p>
+
+<p>Short options are specified by a preceding hyphen, e.g., <span class="code">-a</span>. Arguments for short options may be separated from the option by whitespace, or they may not, e.g., <span class="code">-p bob</span> and <span class="code">-pbob</span> are equivalent. However, if an option argument starts with a hyphen, it must be specified without whitespace: <span class="code">-p -bob</span> is parsed as two options <span class="code">-p</span> and <span class="code">-b</span>, but <span class="code">-p-bob</span> is parsed as a single option <span class="code">-p</span> with argument <span class="code">-bob</span>.</p>
+
+<p>Short options without arguments may be combined into short option runs, e.g., <span class="code">-ab</span> and <span class="code">-a -b</span> are equivalent as long as option <span class="code">-a</span> does not take an argument. An option that takes a required or optional argument may end the run, e.g., <span class="code">-abp bob</span>, which would be equivalent to <span class="code">-abpbob</span>.</p>
+
+<p>Long options are specified by two preceding hyphens, e.g., <span class="code">--substring</span>. Arguments for long options may be separated from the option by whitespace, or by a single equals sign, e.g., <span class="code">--password bob</span> and <span class="code">--password=bob</span> are equivalent. However, if an option argument starts with a hyphen, it must be specified using the equals sign: <span class="code">--password -bob</span> is parsed as two options, but <span class="code">--password=-bob</span> is parsed as a single option with argument.</p>
+
+<h2>Output Standards</h2>
+
+<p>Warnings and errors are output on stderr. Warnings are prefixed with the string <span class="code">Warning: </span> and errors are prefixed with the string <span class="code">Error: </span>. Each warning and error will be exactly one line long; output is not formatted to the terminal width.</p>
+
+<p>Interactive prompts and program results are output on stdout.</p>
+
+<h2>Return Code Standards</h2>
+
+<p>All NTUtils programs return 0 if there was no error, -1 if there was an error, and 1 if the help option was specified.</p>
+
+</body>
+</html>

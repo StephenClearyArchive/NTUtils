@@ -1,0 +1,66 @@
+<html>
+<head>
+<title>NTUtils - ntsuspend</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+
+<h1 align="center">ntsuspend - Suspend or resume processes</h1>
+
+<h2>Usage</h2>
+
+<pre class="code">
+Usage: ntsuspend [options]
+Options:
+  -h [ --help ]           : Display this information
+  -i [ --pid ] arg        : Specify process id
+  -n [ --name ] arg       : Specify process name
+  -s [ --substr ]         :   Process name is a substring match
+  -r [ --resume ]         : Resume instead of suspend
+  -t [ --test ]           : Test process(es) for suspension
+  -c [ --computer ] arg   : Execute on remote computer
+  -u [ --username ] arg   :   Username for remote computer
+  -p [ --password ] [arg] :   Password for remote computer</pre>
+
+<p>The <span class="code">--help</span> option displays usage information (see <a href="standards.html">Usage Standards</a>). The <span class="code">--computer</span>, <span class="code">--username</span>, and <span class="code">--password</span> options are used in <a href="remote.html">remote administration</a>.</p>
+
+<p><span class="code">ntsuspend</span> supports three different actions: suspend processes (default), resume processes (<span class="code">--resume</span>), or test processes (<span class="code">--test</span>).</p>
+
+<p>The processes to act on may be specified by process id (<span class="code">--pid</span>), by name (<span class="code">--name</span>) or by name substring (<span class="code">--substr --name</span>). Either the process id or name may be specified, but not both. The suspend and resume actions require a process id or name, but the test action will run against all processes in the system if neither is specified. When processes are specified by name or name substring, the action is taken against all processes matching that name or name substring. The extension of the process (e.g., <span class="code">.exe</span>) may be provided but is not necessary when specifying processes by name.</p>
+
+<p>Suspending a process will cause that process to no longer be scheduled for work by the OS. This is useful if some process is taking up CPU time or thrashing the disk, but you don't want to actually kill the process. Note that leaving a processes suspended will cause the OS to think that the process is not responding. For this reason, it is not recommended to suspend services. Also, suspending system processes is possible but not recommended.</p>
+
+<p>Suspending a process will fail if the process is already suspended or if the user does not have adequate privileges.</p>
+
+<p>Resuming a process will allow a process to be scheduled again. Resuming a process will fail if the process is not suspended or if the user does not have adequate privileges.</p>
+
+<p>Testing a process will determine if a process is already suspended or if it is running. You can get a list of all process names, ids, and their suspended state by running <span class="code">ntsuspend -t</span>.</p>
+
+<h2>How It Works</h2>
+
+<p>Suspending a process is done by suspending all the threads in that process. This is done in a loop so that if more threads are created during the suspension action, they will be caught as well.</p>
+
+<p>Resuming a process is done by resuming all threads in that process.</p>
+
+<p>Testing a process is done by suspending and resuming all its threads, and checking the previous suspend counts of those threads. This is the only portable way to test for suspension.</p>
+
+<h2>When It Fails</h2>
+
+<p><span class="code">ntsuspend</span> may fail if the processes it is acting on has one of its threads exit at just the wrong time.</p>
+
+<p>When performing an action against a list or processes, if one of the actions fails, the rest of the list is ignored and the already-affected processes are not rolled back. For example, if there are three instances of <span class="code">notepad</span> running, the second of which is under a different user account, and a non-Administrator runs <span class="code">ntsuspend -n notepad</span>, the first instance would be suspended but the second one would cause an error; in this case, the first instance is left suspended but the third is left running.</p>
+
+<p>There is also the possibility of catastrophic failure; that is, where some threads in a process are properly suspended but the rest are not. The only likely cause of this is if the process exited while it was being suspended. In the case of this happening, a special error is reported: <span class="code">Error: Process %PID% is now in an invalid state due to </span>...</p>
+
+<p>In the case of a process that regularly suspends and resumes its threads, and already has one thread at its maximum suspend count, <span class="code">ntsuspend</span> will be unable to suspend that process, or even test it for suspension. A similar problem may occur if such a process has a thread at one below the maximum suspend count, in which case <span class="code">ntsuspend</span> will be able to suspend the process but will not be able to resume it.</p>
+
+<h2>Limitations</h2>
+
+<p>Process id 0 cannot be specified for any type of action. On NT systems, this is the idle process.</p>
+
+<p>When operating remotely, process names are limited to 256 characters.</p>
+
+<p>When operating remotely, the maximum size of the response string is 8196 characters.</p>
+
+</body>
+</html>
